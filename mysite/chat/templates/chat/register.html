@@ -1,0 +1,27 @@
+{% extends "chat/base.html" %}
+
+{% block main %}
+    <div class="container text-center" >
+        <h3> Регистрация</h3>
+        <hr>
+    </div>
+
+    <form action="" method="POST">
+        {% csrf_token %}
+        <div class="container">
+            <div class="row"  >
+                <div class="col-md-4 offset-md-4" >
+                {% for field in form %}
+                    <div>
+                        <p>{{ field.label }}: <br> {{ field }}</p>
+
+                            <small style="color: red">{{ field.errors }}</small>
+
+                    </div>
+                {% endfor %}
+                    <button  type="submit" class="btn btn-success">Регистрация</button>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock main %}

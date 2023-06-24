@@ -1,0 +1,152 @@
+{% extends "chat/base.html" %}
+{% block friend %}
+
+            <div class="sidebar border border-right col-md-3 col-lg-2 p-0 bg-body-tertiary" style="max-height: 500px" >
+                <div  id="add-friends" style="display: none">
+                    <form action="" id="form-element" method="post">
+                        {% csrf_token %}
+                        <p><select size="3" id="no-friends" class="form-control" multiple name="user">
+                        <option disabled>Выберите пользователя</option>
+
+                        </select></p>
+                        <div style="
+                        display: flex;
+                        justify-content: center;
+                        align-content: flex-end;
+                        flex-direction: column;">
+                            <input id="btn-add-friend" class="btn btn-success" type="submit" value="Добавить в Друзья"></div>
+                    </form>
+                </div>
+
+                <div id="my-friends" style="height: 500px">
+                    <div style="height: 10%; margin-left: 5px">
+                    <h4 class="d-flex align-items-center pb-3 mb-3 text-decoration-none border-bottom" >
+                      <span class="fs-5 fw-semibold" id="text-bar">Список друзей</span>
+                    </h4>
+                    </div>
+                    <div style="height: 80%; margin-left: 5px" id="friends" >
+                    </div>
+                    <div style="
+                        height: 10%;
+                        display: flex;
+                        justify-content: center;
+                        align-content: flex-end;
+                        flex-direction: column; ">
+
+                        <button id="btn-friends"  type="button" class="btn btn-success">Добавить друга</button>
+                    </div>
+                </div>
+            </div>
+{% endblock %}
+{% block main %}
+
+<div class="container"  >
+    <div class="row " id = "my_chat" class="col" style="
+        flex-direction: column-reverse;
+        display: flex">
+
+    </div>
+</div>
+    <div style="
+    position: fixed;
+    max-width: 30% ;
+    top: 74%
+">
+        <input id="chat-message-input" type="text" size="100" class="form-control"><br>
+        <input id="chat-message-submit" type="button" value="Отправить" class="btn btn-primary mb-3">
+    </div>
+{{ room_name|json_script:"room-name"}}
+
+<script>
+    const roomName = JSON.parse(document.getElementById('room-name').textContent);
+
+    const chatSocket = new WebSocket(
+        'ws://'
+        + window.location.host
+        + '/ws/chat/'
+        + roomName
+        + '/'
+    );
+
+    const formElement = document.getElementById('form-element')
+    const user = document.getElementById('user-name').innerHTML;
+    const noFriends = document.getElementById('no-friends');
+    chatSocket.onmessage = function (e) {
+        const data = JSON.parse(e.data);
+        const friends = document.getElementById('friends');
+        let friendHtml = ``;
+        if (data.type === 'response'){
+            if (data.friends){
+                for (const friend of data.friends){
+                        friendHtml += friend + `<br>`
+                }
+            }
+            if (data.no_friends){
+                for (const noFriend of data.no_friends){
+                    const option = document.createElement('option')
+                    option.value = `${noFriend}`
+                    option.text = `${noFriend}`
+                    document.querySelector('#no-friends').add(option)
+                }
+            }
+            friends.innerHTML = friendHtml
+        }
+        if (data.type ==='disconnect'){
+            alert("У вас нет доступа  к чату!")
+            window.location.pathname = '/'
+        }
+        if (data.type === 'chat_message'){
+            let messageElem = document.createElement('div');
+            messageElem.style= "width:max-content; background: lightskyblue;  border-radius: 20px 10px 5px 0 "
+            if (data.username !== user) {
+                messageElem.style= "width:max-content; background: lightskyblue; text-align: right;border-radius: 20px 10px 0"
+                messageElem.classList.add('col', 'align-self-end')
+            }else {messageElem.classList.add('col', 'align-self-start')}
+            messageElem.innerHTML = `
+            <p>${data.username} - ${data.message}</p>
+            <p style="font-size: xx-small">${data.date}</p>`;
+            document.getElementById('my_chat').prepend(messageElem);
+        }
+
+    };
+
+    chatSocket.onclose = function (e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    document.querySelector('#chat-message-input').focus();
+    document.querySelector('#chat-message-input').onkeyup = function (e) {
+        if (e.keyCode === 13) {  // enter, return
+            document.querySelector('#chat-message-submit').click();
+        }
+    };
+
+    document.querySelector('#chat-message-submit').onclick = function (e) {
+        const messageInputDom = document.querySelector('#chat-message-input');
+        const message = messageInputDom.value;
+        chatSocket.send(JSON.stringify({
+            'type': 'chat_message',
+            'message': message,
+            'user': user
+        }));
+        messageInputDom.value = '';
+    };
+    document.getElementById('btn-friends').onclick = function (e) {
+        const myFriend = document.getElementById("my-friends")
+        const addFriend = document.getElementById("add-friends")
+        addFriend.style.removeProperty('display')
+        myFriend.style = 'display: none'
+
+    };
+
+    formElement.addEventListener("submit", (e) => {
+        const formData = new FormData(formElement)
+        const user = formData.get('user')
+        chatSocket.send(JSON.stringify({
+            'type': 'form_data',
+            'data':  user
+        }))
+    });
+
+</script>
+{% endblock  %}

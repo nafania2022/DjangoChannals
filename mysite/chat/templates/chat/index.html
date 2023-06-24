@@ -1,0 +1,24 @@
+{% extends "chat/base.html" %}
+
+{% block main %}
+{% if not request.user.is_authenticated %}
+    <h3>Войдите в акаунт или создайте новый</h3>
+{% else %}
+Введите название комнаты<br>
+<input id="room-name-input" type="text" size="100" class="form-control"><br>
+<input id="room-name-submit" type="button" value="Отправить" class="btn btn-primary mb-3">
+<script>
+    document.querySelector('#room-name-input').focus();
+    document.querySelector('#room-name-input').onkeyup = function (e) {
+        if (e.keyCode === 13) {  // enter, return
+            document.querySelector('#room-name-submit').click();
+        }
+    };
+
+    document.querySelector('#room-name-submit').onclick = function (e) {
+        var roomName = document.querySelector('#room-name-input').value;
+        window.location.pathname = '/chat/' + roomName + '/';
+    };
+</script>
+{% endif %}
+{% endblock main %}

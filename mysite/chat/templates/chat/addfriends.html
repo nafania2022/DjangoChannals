@@ -1,0 +1,28 @@
+{% extends "chat/base.html" %}
+
+{% block main %}
+     <form action="" method="POST">
+        {% csrf_token %}
+        <div class="container">
+            <div class="row"  >
+                <div class="col-md-4 offset-md-4" >
+
+                    <div>
+                        {% for friend in  form %}
+                            <div class="card">{{ friend }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <button  type="submit" class="btn btn-success">Добавить друга</button>
+                </div>
+            </div>
+        </div>
+    </form>
+    <script>
+    const chatSocket = new WebSocket(
+        'ws://'
+        + window.location.host
+        + '/ws/addfriend/'
+    );
+    </script>
+{% endblock %}

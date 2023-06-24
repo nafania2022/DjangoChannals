@@ -1,0 +1,26 @@
+pip install Django
+pip install channels
+pip install daphne
+python -c 'import channels; import daphne; print(channels.__version__, daphne.__version__)'
+python -m django --version
+
+django-admin startproject mysite
+python manage.py startapp chat
+
+python manage.py runserver
+python manage.py migrate
+
+# До подключения
+Starting development server at http://127.0.0.1:8000/
+# После подключения
+Starting ASGI/Daphne version 4.0.0 development server at http://127.0.0.1:8000/
+
+
+ДЗ:
+- Написать свой мессенджер(Аналог телеграма)
+1. Авторизация и аккаунты
+- Лимиты на чаты
+- Доступ только к своим чатам
+- Добавление друзей в чаты
+2. Хранить историю чата в БД(postgres)
+3. Сделать красивый визуал
